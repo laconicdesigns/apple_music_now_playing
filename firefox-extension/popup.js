@@ -122,18 +122,47 @@ document.addEventListener('DOMContentLoaded', function() {
     browserAPI.storage.local.get(['trackHistory'], (result) => {
       const history = result.trackHistory || [];
       
+      // Clear existing content safely
+      historyEl.textContent = '';
+      
       if (history.length === 0) {
-        historyEl.innerHTML = '<div style="text-align: center; color: #888; font-size: 12px;">No tracks recorded yet</div>';
+        const emptyDiv = document.createElement('div');
+        emptyDiv.style.textAlign = 'center';
+        emptyDiv.style.color = '#888';
+        emptyDiv.style.fontSize = '12px';
+        emptyDiv.textContent = 'No tracks recorded yet';
+        historyEl.appendChild(emptyDiv);
         return;
       }
 
-      historyEl.innerHTML = history.slice(0, 10).map(track => `
-        <div class="history-item">
-          <strong>${track.title}</strong> - ${track.artist}<br>
-          <small>${track.album}</small><br>
-          <div class="timestamp">${new Date(track.timestamp).toLocaleString()}</div>
-        </div>
-      `).join('');
+      // Create history items using DOM methods for security
+      history.slice(0, 10).forEach(track => {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+        
+        // Create title and artist line
+        const titleLine = document.createElement('div');
+        const titleStrong = document.createElement('strong');
+        titleStrong.textContent = track.title || 'Unknown Title';
+        titleLine.appendChild(titleStrong);
+        titleLine.appendChild(document.createTextNode(' - ' + (track.artist || 'Unknown Artist')));
+        titleLine.appendChild(document.createElement('br'));
+        
+        // Create album line
+        const albumSmall = document.createElement('small');
+        albumSmall.textContent = track.album || 'Unknown Album';
+        titleLine.appendChild(albumSmall);
+        titleLine.appendChild(document.createElement('br'));
+        
+        // Create timestamp
+        const timestampDiv = document.createElement('div');
+        timestampDiv.className = 'timestamp';
+        timestampDiv.textContent = new Date(track.timestamp).toLocaleString();
+        
+        historyItem.appendChild(titleLine);
+        historyItem.appendChild(timestampDiv);
+        historyEl.appendChild(historyItem);
+      });
     });
   }
 

@@ -19,6 +19,20 @@
       "run_at": "document_end"
     }
   ],
+
+  "browser_specific_settings": {
+    "gecko": {
+        "id": "amp-now-playing-getter@vctr.ninja",
+        "data_collection_permissions": {
+          "required": [
+             "websiteContent"
+          ],
+          "optional": [
+             "technicalAndInteraction"
+          ]
+         }
+      }
+  },
   
   "background": {
     "scripts": ["background.js"],
