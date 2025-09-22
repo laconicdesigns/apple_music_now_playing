@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "AMP Now Playing Getter",
-  "version": "1.0",
+  "version": "1.0.1",
   "description": "Extracts now playing information from Apple Music, sends to WebSocket, and optionally saves to text file.",
   
   "permissions": [
