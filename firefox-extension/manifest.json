@@ -1,0 +1,52 @@
+{
+  "manifest_version": 2,
+  "name": "AMP Now Playing Getter (Firefox)",
+  "version": "1.0",
+  "description": "Extracts now playing information from Apple Music, sends to WebSocket, and optionally saves to text file.",
+  
+  "permissions": [
+    "activeTab",
+    "storage",
+    "downloads",
+    "downloads.open",
+    "https://music.apple.com/*"
+  ],
+  
+  "content_scripts": [
+    {
+      "matches": ["https://music.apple.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_title": "AMP Now Playing Getter",
+    "default_icon": {
+      "16": "blakesampicon.png",
+      "32": "blakesampicon.png",
+      "48": "blakesampicon.png",
+      "128": "blakesampicon.png"
+    }
+  },
+  
+  "icons": {
+    "16": "blakesampicon.png",
+    "32": "blakesampicon.png", 
+    "48": "blakesampicon.png",
+    "128": "blakesampicon.png"
+  },
+
+  "applications": {
+    "gecko": {
+      "id": "amp-now-playing-getter@firefox.extension",
+      "strict_min_version": "91.0"
+    }
+  }
+}
