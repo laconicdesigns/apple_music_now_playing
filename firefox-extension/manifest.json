@@ -29,17 +29,17 @@
     "default_popup": "popup.html",
     "default_title": "AMP Now Playing Getter",
     "default_icon": {
-      "16": "ampnpg.png",
-      "32": "ampnpg.png",
-      "48": "ampnpg.png",
+      "16": "ampnpg16.png",
+      "32": "ampnpg32.png",
+      "48": "ampnp48.png",
       "128": "ampnpg.png"
     }
   },
   
   "icons": {
-    "16": "ampnpg.png",
-    "32": "ampnpg.png", 
-    "48": "ampnpg.png",
+    "16": "ampnpg16.png",
+    "32": "ampnpg32.png", 
+    "48": "ampnpg48.png",
     "128": "ampnpg.png"
   }
 }
