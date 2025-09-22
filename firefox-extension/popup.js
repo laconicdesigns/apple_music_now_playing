@@ -32,6 +32,32 @@ document.addEventListener('DOMContentLoaded', function() {
   loadCurrentTrack();
   loadHistory();
   
+  // Listen for storage changes to update popup in real-time
+  browserAPI.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === 'local') {
+      if (changes.lastTrack) {
+        console.log('Track changed, updating popup...');
+        loadCurrentTrack();
+      }
+      if (changes.trackHistory) {
+        console.log('History changed, updating popup...');
+        loadHistory();
+      }
+      if (changes.websocketConnected) {
+        console.log('WebSocket status changed, updating popup...');
+        if (changes.websocketConnected.newValue) {
+          websocketConnectionStatus.textContent = 'Connected';
+          websocketConnectionStatus.className = 'status-value connected';
+          websocketStatus.className = 'status-indicator connected';
+        } else {
+          websocketConnectionStatus.textContent = 'Disconnected';
+          websocketConnectionStatus.className = 'status-value disconnected';
+          websocketStatus.className = 'status-indicator disconnected';
+        }
+      }
+    }
+  });
+  
   // WebSocket events
   connectBtn.addEventListener('click', connectWebSocket);
   disconnectBtn.addEventListener('click', disconnectWebSocket);
@@ -86,35 +112,47 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Settings saved:', settings);
   }
 
-  // Query content script for current track status and update UI
+  // Query storage for current track status and update UI
   function loadCurrentTrack() {
     console.log('Checking current track status...');
     
-    browserAPI.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const activeTab = tabs[0];
-
-      browserAPI.tabs.sendMessage(activeTab.id, { type: 'GET_CURRENT_TRACK' })
-        .then((response) => {
-          if (response && response.track) {
-            // Track detection is working
-            trackStatus.textContent = 'Active';
-            trackStatus.className = 'status-value active';
-            lastTrackInfo.textContent = `${response.track.artist} - ${response.track.title}`;
+    // Get the last track from storage instead of messaging content script
+    browserAPI.storage.local.get(['lastTrack'], (result) => {
+      if (result.lastTrack && result.lastTrack.title) {
+        // Track detection is working - we have valid track data
+        trackStatus.textContent = 'Active';
+        trackStatus.className = 'status-value active';
+        lastTrackInfo.textContent = `${result.lastTrack.artist || 'Unknown Artist'} - ${result.lastTrack.title}`;
+        console.log('Current track loaded from storage:', result.lastTrack);
+      } else {
+        // No track data in storage
+        console.log('No track data in storage');
+        trackStatus.textContent = 'No track playing';
+        trackStatus.className = 'status-value inactive';
+        lastTrackInfo.textContent = 'None detected';
+        
+        // Fallback: try to query active Apple Music tab if it exists
+        browserAPI.tabs.query({ url: "https://music.apple.com/*" }, (tabs) => {
+          if (tabs.length > 0) {
+            // There's an Apple Music tab, try to get current track
+            browserAPI.tabs.sendMessage(tabs[0].id, { type: 'GET_CURRENT_TRACK' })
+              .then((response) => {
+                if (response && response.track) {
+                  trackStatus.textContent = 'Active';
+                  trackStatus.className = 'status-value active';
+                  lastTrackInfo.textContent = `${response.track.artist} - ${response.track.title}`;
+                }
+              })
+              .catch((error) => {
+                console.log('Could not query Apple Music tab:', error);
+              });
           } else {
-            // No track currently playing
-            console.log('No track currently playing');
-            trackStatus.textContent = 'No track playing';
+            trackStatus.textContent = 'Extension not loaded';
             trackStatus.className = 'status-value inactive';
-            lastTrackInfo.textContent = 'None detected';
+            lastTrackInfo.textContent = 'Open Apple Music';
           }
-        })
-        .catch((error) => {
-          // Content script not responding - likely not on Apple Music tab
-          console.error('Failed to get current track:', error);
-          trackStatus.textContent = 'Extension not loaded';
-          trackStatus.className = 'status-value inactive';
-          lastTrackInfo.textContent = 'Refresh Apple Music';
         });
+      }
     });
   }
 
